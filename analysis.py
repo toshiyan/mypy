@@ -18,6 +18,8 @@ class statistics:
     self.px1 = 0.
     self.ox1 = 0.
 
+    self.onlydiag = False
+
 
   def x2PTE(self):
     # compute chi^2 PTE of ocl using scl
@@ -90,7 +92,7 @@ class statistics:
     amps = self.scl/fcl
 
     # optimal weighting evaluated from simulation
-    wb, wt = opt_weight(amps)
+    wb, wt = opt_weight(amps,self.onlydiag)
 
     # amplitude estimator
     A  = np.sum(wb*ampo,axis=1)/wt
@@ -135,11 +137,12 @@ def apofunc(distance,aposcale):
   return  y - np.sin(2*np.pi*y)/(2*np.pi)
 
 
-def opt_weight(x):
+def opt_weight(x,diag=False):
   # optimal weighting
   #   x --- data like [sim,bin]
   if x.shape[1]>=2: 
     cov  = np.cov(x,rowvar=0)
+    if diag: cov = np.diag(np.diag(cov)) # set off-diag to zero
     cov[np.isnan(cov)] = 0.
     cinv = np.linalg.inv(cov)   # inverse covariance
   else:
