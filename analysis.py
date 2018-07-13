@@ -101,6 +101,8 @@ class statistics:
 
     print 'mean =', mA, ', sigma =', sA, ', S/N =', np.sqrt(wt)
 
+    return mA, sA
+
 
   def plot_hist(self,xran=[-1.,4.],yran=[0.,4.],l=6,histbn=20,showfig=False,f=''):
     import matplotlib.pyplot as plt
