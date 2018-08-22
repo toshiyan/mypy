@@ -15,8 +15,10 @@ class statistics:
     self.p  = 0.
     self.px2 = 0.
     self.ox2 = 0.
+    self.sx2 = 0.
     self.px1 = 0.
     self.ox1 = 0.
+    self.sx1 = 0.
 
     self.onlydiag = False
 
@@ -24,27 +26,35 @@ class statistics:
   def x2PTE(self):
     # compute chi^2 PTE of ocl using scl
     n   = len(self.scl[:,0])
+    # for real data
     mx  = np.mean(self.scl,axis=0)
     dxi = self.scl - mx
     dx0 = self.ocl - mx
     cov = np.cov(dxi,rowvar=0)
     oX2 = np.dot(dx0,np.dot(np.linalg.inv(cov),dx0))
+    # for sim (exclude self rlz)
+    dxi = np.array([self.scl[i,:]-np.mean(np.delete(self.scl,i,0),axis=0) for i in range(n)])
     sX2 = np.array([np.dot(dxi[i,:],np.dot(np.linalg.inv(np.cov(np.delete(dxi,i,0),rowvar=0)),dxi[i,:])) for i in range(n)])
+    # output
     self.px2 = (sX2>oX2).sum()/np.float(n)
     self.ox2 = oX2
+    self.sx2 = sX2
 
 
   def x1PTE(self):
     # compute chi PTE of ocl using scl
     n   = len(self.scl[:,0])
+    # for real data
     mx  = np.mean(self.scl,axis=0)
     sx  = np.std(self.scl,axis=0)
-    dxi = self.scl - mx
-    dxo = self.ocl - mx
-    oX1 = np.sum(dxo/sx)
-    sX1 = np.array([np.sum(dxi[i,:]/sx) for i in range(n)])
+    oX1 = np.sum((self.ocl-mx)/sx)
+    # for sim (exclude self rlz)
+    dxi = np.array([self.scl[i,:]-np.mean(np.delete(self.scl,i,0),axis=0) for i in range(n)])
+    sX1 = np.array([np.sum(dxi[i,:]/np.std(np.delete(self.scl,i,0),axis=0)) for i in range(n)])
+    # output
     self.px1 = (sX1>oX1).sum()/np.float(n)
     self.ox1 = oX1
+    self.sx1 = sX1
 
 
   def get_amp(self,fcl='',scale=1.):
@@ -104,10 +114,10 @@ class statistics:
     return mA, sA
 
 
-  def plot_hist(self,xran=[-1.,4.],yran=[0.,4.],l=6,histbn=20,showfig=False,f=''):
+  def plot_hist(self,l=6,histbn=20,showfig=False,f=''):
     import matplotlib.pyplot as plt
-    plt.xlim(xran)
-    plt.ylim(yran)
+    #plt.xlim(xran)
+    #plt.ylim(yran)
     plt.xlabel(r'Power spectrum amplitude')
     plt.ylabel(r'Probability distribution')
     plt.hist(self.A,bins=histbn,normed=1,weights=np.ones_like(self.A)/float(len(self.A)),alpha=.5,lw=0)
