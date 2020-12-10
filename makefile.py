@@ -13,7 +13,8 @@ myl['prj']     = ''
 myl['cfitsio'] = False
 myl['healpix'] = False
 myl['lenspix'] = False
-myl['mylib']   = '\${HOME}/Work/Lib/mylib/'
+#myl['mylib']   = '\${HOME}/Work/Lib/cosmodat/f90/'
+myl['mylib']   = '\${HOME}/Work/Lib/myf90lib/'
 
 #//// text adds to a file ////#
 def add(text,f,ini=False,opt=''):
@@ -21,7 +22,7 @@ def add(text,f,ini=False,opt=''):
   if not ini: os.system('echo '+opt+' "'+text+'" >> '+f)
 
 
-def makefile(f='Makefile',flag='-O3 -ip -fpp',debug=False,myl='',obj='main.o'):
+def makefile(f='Makefile',flag='-O3 -ip -fpp --no-wrap-margin',debug=False,myl='',obj='main.o'):
   #//// create Makefile ////#
 
   ## executable file
@@ -29,13 +30,13 @@ def makefile(f='Makefile',flag='-O3 -ip -fpp',debug=False,myl='',obj='main.o'):
 
   ## Complier and options
   add('FC = ifort',f,ini=True)
-  if myl['healpix'] or myl['anafull'] or myl['lenspix']: flag = '-qopenmp -ip -fpp' # should use openmp for healpix
+  if myl['healpix'] or myl['anafull'] or myl['lenspix']: flag = '-qopenmp -ip -fpp' # should use qopenmp for healpix
   add('FLAG = '+flag,f)
   if debug: add('DBAG = -check all -std -gen_interfaces -fpe0 -ftrapuv -traceback',f)
   add('FLAGS = \$(FLAG) \$(DBAG)',f)
 
   ## Directories and Link options
-  dir, mod, lib, link, prj = myl['mylib'], '', '', '', myl['prj']
+  dir, mod, lib, link, prj, pub = myl['mylib'], '', '', '', myl['prj'], myl['mylib']+'pub/'
 
   # local project lib
   if prj!='':
@@ -52,27 +53,27 @@ def makefile(f='Makefile',flag='-O3 -ip -fpp',debug=False,myl='',obj='main.o'):
 
   # FFTW
   if myl['anaflat']:
-    mod, lib = mod+' -I'+dir+'pub/FFTW/api',  lib+' -L'+dir+'pub/FFTW/'
+    mod, lib = mod+' -I'+pub+'FFTW/api',  lib+' -L'+pub+'FFTW/'
     link = link+' -lfftw3'
 
   # LAPACK
   if myl['linalg']:
-    mod, lib = mod+' -I'+dir+'pub/LAPACK95/mod',  lib+' -L'+dir+'pub/LAPACK95/lib'
+    mod, lib = mod+' -I'+pub+'LAPACK95/mod',  lib+' -L'+pub+'LAPACK95/lib'
     link = link+' -llapack95 -llapack -lrefblas'
 
   # Lenspix
   if myl['lenspix']:
-    mod, lib = mod+' -I'+dir+'../lenspix/mod',  lib+' -L'+dir+'../lenspix/lib'
+    mod, lib = mod+' -I'+pub+'lenspix/mod',  lib+' -L'+pub+'lenspix/lib'
     link = link+' -llenspix'
 
   # Healpix
   if myl['healpix'] or myl['anafull'] or myl['lenspix']:
-    mod, lib = mod+' -I'+dir+'pub/Healpix/include',  lib+' -L'+dir+'pub/Healpix/lib'
+    mod, lib = mod+' -I'+pub+'Healpix/include',  lib+' -L'+pub+'Healpix/lib'
     link = link+' -lhealpix'
 
   # cfitsio
   if myl['cfitsio'] or myl['healpix'] or myl['anafull'] or myl['lenspix']:
-    lib = lib+' -L'+dir+'pub/cfitsio'
+    lib = lib+' -L'+pub+'cfitsio'
     link = link+' -lcfitsio'
 
   # summary

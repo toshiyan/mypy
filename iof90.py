@@ -3,6 +3,9 @@ import numpy as np
 from scipy.io import FortranFile
 
 def writef90map(fname,d1):
+  """
+  Save data to a fortran file
+  """
   f = FortranFile(fname,'w')
   #f.write_record(np.int16(dim))
   f.write_record(np.float64(d1))
@@ -18,7 +21,7 @@ def readfile(fname,dt=np.float64,hdrnum=0):
   f = open(fname,'r')
   if hdrnum>0: 
     hdr = np.fromfile(f,dtype=np.int32,count=hdrnum)
-    print hdr
+    print(hdr)
   dat = np.fromfile(f,dtype=dt)
   f.close()
   return dat
